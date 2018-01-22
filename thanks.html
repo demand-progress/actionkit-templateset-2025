@@ -12,7 +12,7 @@
         <div class="ak-grid-row">
             <div class="ak-grid-col ak-grid-col-12-of-12">
                 <p>
-                    {% filter ak_text:"logged_in_as" %}You are logged in as{% endfilter %} {{ actionkit_user.name }}.
+                    {% filter ak_text:"logged_in_as" %}You are logged in as{% endfilter %} {{ actionkit_user.name|escape }}.
                     <a href="/logout">{% filter ak_text:"logout" %}Click to log out.{% endfilter %}</a>
                 </p>
             </div>
@@ -58,11 +58,11 @@
 
         <div class="ak-grid-col ak-grid-col-6-of-12 ak-margin-top-2">
             <div>
-                <a class="ak-button ak-share-button ak-facebook" href="/share/link?type=fb&amp;page_name={{page.name}}&amp;action_id={{action.id}}&amp;akid={{akid}}" target="_blank">Post to Facebook</a>
+                <a class="ak-button ak-share-button ak-facebook" href="/share/link?type=fb&amp;page_name={{page.name}}&amp;action_id={{action.id}}&amp;akid={{akid}}&amp;source=fb-share" target="_blank">Post to Facebook</a>
             </div>
 
             <div>
-                <a class="ak-button ak-share-button ak-twitter" href="/share/link?type=tw&amp;page_name={{page.name}}&amp;action_id={{action.id}}&amp;akid={{akid}}" target="_blank">Share on Twitter</a>
+                <a class="ak-button ak-share-button ak-twitter" href="/share/link?type=tw&amp;page_name={{page.name}}&amp;action_id={{action.id}}&amp;akid={{akid}}&amp;source=tw-share" target="_blank">Share on Twitter</a>
                 <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
             </div>
 

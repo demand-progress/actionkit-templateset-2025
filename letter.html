@@ -30,10 +30,11 @@
 						{% else %}
 						<h3>Send the letter</h3>
 						{% endif %}
-						
+						<div class="ak-margin-top-1">
 						{% include "./user_form_wrapper.html" %}
+   						</div>   
 		
-						The Letter:
+						<b>The Letter:</b>
 						<textarea id="id_comment" name="action_comment" class="ak-letter-text ">{% include_tmpl form.letter_text escaped %}</textarea>
 		
 						{# Optional TAF {% include "./inline_tellafriend.html" %} #}

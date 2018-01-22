@@ -16,7 +16,6 @@
 				<div class="ak-sticky">             
 					<div class="statement-text-wrapper ak-field-box">
 		
-						{% if page.custom_fields.featured_image or form.about_text %}
 								{% if form.statement_leadin %}
 									<h3>
 										{% include_tmpl form.statement_leadin %}
@@ -26,7 +25,6 @@
 										Sign the petition:
 									</h3>
 								{% endif %}
-						{% endif %}
 						
 						<div id="petition-form" class="ak-styled-fields ak-margin-top-1 {{templateset.custom_fields.field_labels_class|default:"ak-labels-overlaid"}} {{templateset.custom_fields.field_errors_class|default:"ak-errs-below"}}">
 							{% include "./user_form_wrapper.html" %}
@@ -69,19 +67,18 @@
 
                         <div class="ak-margin-bottom-1 dp-petition">
                             {% include_tmpl form.statement_text %}
-
                         </div>
                         
-
                 {% autoescape off %}
                     <div >{% include_tmpl form.about_text %}</div>
                 {% endautoescape %}
             </div>
              {% else %}
-                 {% if form.statement_leadin %}
-                    <p class="ak-petition-leadin">
-                        {% include_tmpl form.statement_leadin %}
-                    </p>
+                <h2 class="ak-dp-desktop">{{ page.title }}</h2>
+                 {% if form.statement_text %}
+                        <div class="ak-margin-bottom-1 dp-petition">
+                            {% include_tmpl form.statement_text %}
+                        </div>
                 {% endif %}
              {% endif %}
 			<div class="click-here-to-sign">

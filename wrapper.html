@@ -8,10 +8,25 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge;chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <link rel="shortcut icon" href="https://demandprogress.org/favicon.ico">
-
+    <link rel="apple-touch-icon" sizes="180x180" href="https://demandprogress.org/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://demandprogress.org/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://demandprogress.org/favicon-16x16.png">
+    <link rel="manifest" href="https://demandprogress.org/manifest.json">
+    <link rel="mask-icon" href="https://demandprogress.org/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="theme-color" content="#ffffff">
+	
+	{% if page.type == "Petition" or page.type == "Letter" %}
+	    {% with custom_image_url=page.custom_fields.image_url %}
+            <meta property="og:image" content="{{ page.followup.share_image_value|default:custom_image_url|default:"https://s3.amazonaws.com/demandprogress/images/add-your-name.png" }}" />
+        {% endwith %}
+    {% else %}
+	    {% with custom_image_url=page.custom_fields.image_url %}
+            <meta property="og:image" content="{{ page.followup.share_image_value|default:custom_image_url|default:"https://s3.amazonaws.com/demandprogress/images/demandprogress-logo-facebook.png" }}" />
+        {% endwith %}
+    {% endif %}
+	
     {{ page.followup.share_title_tag }}
     {% if form.id %}<meta name="description" property="og:description" content="{% block description %}{{ page.followup.share_description_value }}{% endblock %}">{% endif %}
-    {{ page.followup.share_image_tag }}
     {{ page.followup.share_url_tag }}
     <meta property="og:site_name" content="{% filter ak_text:"org_name" %}{% client_name %}{% endfilter %}">
     <meta property="og:type" content="article">
@@ -269,8 +284,6 @@
 <body class="ak-pagetype-{{ filename|split:'.'|nth:0 }} ak-lang-{{page.lang.iso_code|default:"unknown"}}{% if page.lang.is_rtl %} ak-rtl{% endif %} ak-no-js">
     <script type="text/javascript">actionkit.forms.initPage()</script>
 
-<div class="ak-all-content-wrapper">
-
 {% if page.custom_fields.partners_header %}
 
     <div class="ak-page-header" style="height:auto; width:auto;" >
@@ -324,7 +337,6 @@
 </div>
 
     </div>
-    </div>
 
     {% block below_form %}
     <script type="text/javascript">
@@ -348,5 +360,4 @@
         
 </body>
 </html>
-
 
