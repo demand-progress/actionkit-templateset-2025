@@ -15,7 +15,8 @@
       locationField: "#id_zip",
       scriptDisplay: "overlay",
       submitDelay: 500,
-      customJS: "$('.overlay').on('hide', function() { actionkit.form.submit(); });"
+      customJS: "actionkit.context.incomplete = 0; $('form.ak-form input[name=status]').val('complete'); actionkit.form.submit();",
+      overlayCloseText: 'After your call, click here to log your call',
   };
   </script>
   <script type="text/javascript" src="https://demandprogress.callpower.org/api/campaign/{{page.custom_fields.callpower_campaign_id}}/embed.js"></script>
