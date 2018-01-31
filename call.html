@@ -10,7 +10,7 @@
 {% if page.custom_fields.callpower_campaign_id %}
   <script type="text/javascript">
   window.CallPowerOptions = {
-      form: "form.ak-form",
+      form: "form.ak-form.incomplete",
       phoneField: "#id_phone",
       locationField: "#id_zip",
       scriptDisplay: "overlay",
@@ -21,9 +21,9 @@
   <script type="text/javascript" src="https://demandprogress.callpower.org/api/campaign/{{page.custom_fields.callpower_campaign_id}}/embed.js"></script>
   {% endif %}
 
-<form class="ak-form ak-styled-fields" name="act" method="POST" action="/act/" accept-charset="utf-8">
+<form class="ak-form ak-styled-fields {%if not action%}incomplete{%endif%}" name="act" method="POST" action="/act/" accept-charset="utf-8">
 
-{% if akid and user.phone %}
+{% if page.custom_fields.callpower_campaign_id and page.recognize != "never" and akid and user.phone %}
     <!-- hidden fields necessary for CallPower to work for recognized users -->
     <input id="id_name" type="hidden" name="name" value="{{user.name}}">
     <input id="id_email" type="hidden" name="email" value="{{user.email}}">
@@ -61,7 +61,7 @@
 
                 <div id="ak-need-contact-info"></div>
                 <script type="text/ak-template" for="ak-need-contact-info">
-						<h3>Make a call</h2>
+                        <h3>Make a call</h3>
                 
                     [% if (incomplete) { %]
                         <div class="ak-instructions ak-faded-text">
