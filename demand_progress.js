@@ -16,31 +16,33 @@
 */
 
 
-/* Modified by WAWD for DemandProgress ActionKit templates, 9/2017 */
+/* Modified by WAWD for DemandProgress ActionKit templates, 2/2018 */
 
 // sticky form function
 function fixFormToTop(obj) {
   if ($(obj).length !== 0) {
         formWrapper = $(obj).children(".ak-sticky"),
-        // adding 20 to give bottom padding to bottom of sticky form section
         heightOfForm = $(".ak-sticky").outerHeight(),
         contentHeight = $('.ak-page-container').outerHeight() + $('.ak-page-header').outerHeight(),
         lastScrollTop = 0,
-        formDistanceFromTop = $(obj).offset().top; //ugh, this should be programmatic...
-
+        formDistanceFromTop = $(obj).offset().top; 
 $(window).scroll(function() {
-          var distanceToTravel = contentHeight - heightOfForm;
-          scrollTop = $(window).scrollTop();
-      if (scrollTop >= formDistanceFromTop && scrollTop <= distanceToTravel)  {
-          formWrapper.removeClass("relative").css("top","0px");
-          formWrapper.addClass("fixed");
-      } else if (scrollTop >= distanceToTravel) {
-          formWrapper.removeClass("fixed");
-          formWrapper.addClass("relative").css("top",distanceToTravel - formDistanceFromTop);
-      } else {
-        formWrapper.removeClass("fixed");
-      }
-    });
+    var distanceToTravel = contentHeight - heightOfForm;
+    scrollTop = $(window).scrollTop();
+    if (formDistanceFromTop + heightOfForm + 40  < contentHeight){
+    //ensures we only do this if form area is taller than content
+          if (scrollTop >= formDistanceFromTop && scrollTop <= distanceToTravel)  {
+              formWrapper.removeClass("relative").css("top","0px");
+              formWrapper.addClass("fixed");
+          } else if (scrollTop >= distanceToTravel) {
+              formWrapper.removeClass("fixed");
+              formWrapper.addClass("relative").css("top",distanceToTravel - formDistanceFromTop);
+          } else {
+              formWrapper.removeClass("fixed");
+              formWrapper.addClass("relative").css("top",0);
+         }
+    }
+});
   }
 }
 
