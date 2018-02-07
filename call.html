@@ -15,11 +15,7 @@
       locationField: "#id_zip",
       scriptDisplay: "overlay",
       submitDelay: 500,
-      customJS: "$('.overlay').on('hide', function() { \
-        actionkit.context.incomplete = 0; \
-        $('form.ak-form input[name=status]').val('complete'); \
-        actionkit.form.submit(); \
-      });",
+      customJS: "$('.overlay').on('hide', function() { actionkit.form.submit(); });",
       overlayCloseText: 'After your call, click here to log your call',
   };
   </script>
