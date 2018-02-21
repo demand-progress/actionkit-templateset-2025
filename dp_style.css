@@ -8,7 +8,7 @@
 
 a {
     text-decoration: none;
-    color: #010429;
+    color: #030527;
     font-weight: 400;
     border-bottom: 1px solid #e1e1e1;
 }
@@ -85,7 +85,7 @@ a.ak-underline-on-hover:hover{
 }
  
 .ak-page-header{
-	border-bottom:24px solid #a11411;
+	border-bottom:24px solid #9f1719;
 	height: 72px;
     padding-top: 4px;
     background:#fff;
@@ -93,7 +93,7 @@ a.ak-underline-on-hover:hover{
 
 @media screen and (max-width: 500px){
     .ak-page-header{
-	    border-bottom:8px solid #a11411;
+	    border-bottom:8px solid #9f1719;
 	    height: 46px;
     }
 }
@@ -221,7 +221,7 @@ button{
 
 .ak-pagetype-petition .statement-text-wrapper.ak-field-box
 {
-    border: 1px solid #a01816;
+    border: 1px solid #9f1719;
 }
 
 .ak-pagetype-letter .ak-grid-col:first-child,
@@ -241,7 +241,7 @@ button{
 }
 
 .ak-pagetype-letter #letter-form{
-    border: 1px solid #a01816;
+    border: 1px solid #9f1719;
 }
 
 #known_user, .known_user {
@@ -318,14 +318,14 @@ textarea#id_comment{
 }
 
 .click-here-to-sign a {
-    color: #a31105;
+    color: #9f1719;
     font-weight: 600;
     font-size: 1.3rem; 
     font-size: 1.3em; 
     }
 
 .click-here-to-sign a:hover {
-    color: #030329;
+    color: #030527;
     
     }
 
