@@ -19,12 +19,12 @@
 
 {% field_order name email prefix first_name middle_name last_name suffix country address1 address2 city state zip region postal phone %}
 
-{% if user.phone and user.custom_fields.sms_opt_in == "Y" %}
+{% if user.mobile_phone and user.sms_opt_in == "Y" %}
   {# User has phone and is opted in - minimal fields #}
-  {% hide_by_default prefix first_name middle_name last_name suffix country phone address1 address2 city state region postal %}
-{% elif user.phone %}
+  {% hide_by_default prefix first_name middle_name last_name suffix country phone mobile_phone address1 address2 city state region postal %}
+{% elif user.mobile_phone %}
   {# User has phone but not opted in - include opt-in checkbox but no phone field #}
-  {% hide_by_default prefix first_name middle_name last_name suffix country address1 address2 city state region postal %}
+  {% hide_by_default prefix first_name middle_name last_name suffix country mobile_phone address1 address2 city state region postal %}
 {% else %}
   {# User has no phone - show phone field and opt-in checkbox #}
   {% hide_by_default prefix first_name middle_name last_name suffix country address1 address2 city state region postal %}
@@ -97,13 +97,12 @@
 actionkit.forms.contextJSON = actionkit.forms.contextJSON || {};
 actionkit.forms.contextJSON.logged_in_recognition = function(recognized_user) {
     console.log("Recognized user:", recognized_user);
-    if (recognized_user && recognized_user.phone) {
+    if (recognized_user && recognized_user.mobile_phone) {
         // Hide phone field if user has a phone
         $('#ak-fieldbox-mobile_phone').hide();
         
         // If they're already opted in, hide the opt-in checkbox
-        if (recognized_user.custom_fields && 
-            recognized_user.custom_fields.sms_opt_in === "Y") {
+        if (recognized_user.sms_opt_in === "Y") {
             $('#ak-fieldbox-user_sms_opt_in').hide();
         } else {
             $('#ak-fieldbox-user_sms_opt_in').show();

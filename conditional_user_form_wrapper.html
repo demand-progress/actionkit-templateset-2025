@@ -7,11 +7,11 @@ For unrecognized users, it works the same as the standard user_form_wrapper.
 {% endcomment %}
 
 <div id="known_user">
-    {% if not user.phone or not user.custom_fields.sms_opt_in == "Y" %}
+    {% if not user.mobile_phone or not user.sms_opt_in == "Y" %}
         <div class="ak-recognized-user-extra-fields">
             <p>Hey <span id="known_user_name"></span>, we need a little more information:</p>
             
-            {% if not user.phone %}
+            {% if not user.mobile_phone %}
                 {% for field in user_fields %}
                     {% if field.field_name == "mobile_phone" %}
                         <div id="ak-fieldbox-{{ field.field_name }}" {% if field.field_name|is_in:context.required %}class="required"{% endif %}>
@@ -24,7 +24,7 @@ For unrecognized users, it works the same as the standard user_form_wrapper.
                 {% endfor %}
             {% endif %}
             
-            {% if not user.custom_fields.sms_opt_in == "Y" %}
+            {% if not user.sms_opt_in == "Y" %}
                 {% for field in user_fields %}
                     {% if field.field_name == "user_sms_opt_in" %}
                         <div id="ak-fieldbox-{{ field.field_name }}" class="ak-checkbox-field {% if field.field_name|is_in:context.required %}required{% endif %}">
