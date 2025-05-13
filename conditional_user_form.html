@@ -1,0 +1,122 @@
+{% load actionkit_tags switchcase %}
+{% filter remove_blank_lines %}
+
+{% comment %}
+  This form template conditionally displays fields based on:
+  1. Whether the user has a phone number ({% if user.phone %})
+  2. Whether the user has opted in to SMS ({% if user.custom_fields.sms_opt_in == "Y" %})
+  
+  Three different scenarios:
+  1. Users with phone + opt-in: Only show email & zip (and name if needed)
+  2. Users with phone but no opt-in: Show email, zip, name, and opt-in checkbox
+  3. Users with no phone: Show email, zip, name, phone field, and opt-in checkbox
+{% endcomment %}
+
+{% field_order name email prefix first_name middle_name last_name suffix country address1 address2 city state zip region postal phone %}
+
+{% if user.phone and user.custom_fields.sms_opt_in == "Y" %}
+  {# User has phone and is opted in - minimal fields #}
+  {% hide_by_default prefix first_name middle_name last_name suffix country phone address1 address2 city state region postal %}
+{% elif user.phone %}
+  {# User has phone but not opted in - include opt-in checkbox but no phone field #}
+  {% hide_by_default prefix first_name middle_name last_name suffix country address1 address2 city state region postal %}
+{% else %}
+  {# User has no phone - show phone field and opt-in checkbox #}
+  {% hide_by_default prefix first_name middle_name last_name suffix country address1 address2 city state region postal %}
+{% endif %}
+
+{% for field in user_fields %}
+    <div id="ak-fieldbox-{{ field.field_name }}" {% if field.field_name|is_in:context.required %}class="required"{% endif %}>
+        <label for="id_{{ field.field_name }}">
+            {{ field.label_text }}{% if field.field_name|is_in:context.required %}<span class="ak-required-flag">*</span>{% endif %}
+        </label>
+        {% switch field.field_name %}
+            {% case 'country' %}
+                {% include "./country_select.html" %}
+            {% case 'state' %} 
+                {% include "./state_select.html" %}
+            {% else %}
+                {{ field.input_html }}
+        {% endswitch %}
+    </div>
+{% endfor %}
+
+{# SMS opt-in checkbox - only show if user doesn't already have opt-in #}
+{% if not user.custom_fields.sms_opt_in == "Y" %}
+<div id="ak-fieldbox-sms_opt_in" class="ak-checkbox-field">
+    <input type="checkbox" name="user_sms_opt_in" id="id_sms_opt_in" value="Y">
+    <label for="id_sms_opt_in">
+        Yes, I would like to receive text messages about important campaigns
+    </label>
+    <div class="disclaimer">
+        <p>By providing my phone number, I agree to receive recurring text messages from Demand Progress. Message & data rates may apply. Text STOP to quit receiving messages.</p>
+    </div>
+</div>
+{% endif %}
+
+{% if 'country'|is_in:fields %}
+    <input type="hidden" name="auto_country" value="1">
+    <style type="text/css">
+        /* Ensure that, if there's no JavaScript, and there are both
+         * global-friendly and US-only fields, the global-friendly
+         * fields show rather than the US-only ones */
+        {% if 'postal'|is_in:fields %}
+        #ak-fieldbox-zip { display: none; }
+        {% endif %}
+        {% if 'region'|is_in:fields %}
+        #ak-fieldbox-state { display: none; }
+        {% endif %}
+    </style>
+{% else %}
+    <input type="hidden" name="country" value="United States">
+{% endif %}
+
+{% endfilter %}
+
+<style>
+.ak-checkbox-field {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #e1e1e1;
+    border-radius: 4px;
+}
+
+.ak-checkbox-field label {
+    display: inline;
+    margin-left: 8px;
+    font-weight: bold;
+}
+
+.disclaimer {
+    margin-left: 24px;
+    margin-top: 5px;
+    font-size: 0.8em;
+    color: #666;
+    font-style: italic;
+}
+</style>
+
+<script type="text/javascript">
+// This script helps ensure the right fields are shown/hidden
+// when a user is recognized or logs out
+actionkit.forms.contextJSON = actionkit.forms.contextJSON || {};
+actionkit.forms.contextJSON.logged_in_recognition = function(recognized_user) {
+    if (recognized_user && recognized_user.phone) {
+        // Hide phone field if user has a phone
+        $('#ak-fieldbox-phone').hide();
+        
+        // If they're already opted in, hide the opt-in checkbox
+        if (recognized_user.custom_fields && 
+            recognized_user.custom_fields.sms_opt_in === "Y") {
+            $('#ak-fieldbox-sms_opt_in').hide();
+        } else {
+            $('#ak-fieldbox-sms_opt_in').show();
+        }
+    } else {
+        // Show phone field if user doesn't have a phone
+        $('#ak-fieldbox-phone').show();
+        $('#ak-fieldbox-sms_opt_in').show();
+    }
+};
+</script>
