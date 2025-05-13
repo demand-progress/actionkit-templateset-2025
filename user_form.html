@@ -107,6 +107,7 @@
 // when a user is recognized or logs out
 actionkit.forms.contextJSON = actionkit.forms.contextJSON || {};
 actionkit.forms.contextJSON.logged_in_recognition = function(recognized_user) {
+    console.log("Recognized user:", recognized_user);
     if (recognized_user && recognized_user.phone) {
         // Hide phone field if user has a phone
         $('#ak-fieldbox-phone').hide();
