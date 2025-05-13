@@ -1,7 +1,88 @@
+{% load actionkit_tags switchcase %}
 <ul class="compact" id="ak-errors"></ul>
+
+{% comment %}
+This wrapper adds conditional logic to show extra fields for recognized users when needed.
+For unrecognized users, it works the same as the standard user_form_wrapper.
+{% endcomment %}
+
 <div id="known_user">
-    Not <span id="known_user_name"></span>?  <a href="?" onclick="return actionkit.forms.logOut()">Click here.</a>
+    {% if not user.phone or not user.custom_fields.sms_opt_in == "Y" %}
+        <div class="ak-recognized-user-extra-fields">
+            <p>Hey <span id="known_user_name"></span>, we need a little more information:</p>
+            
+            {% if not user.phone %}
+                {% for field in user_fields %}
+                    {% if field.field_name == "mobile_phone" %}
+                        <div id="ak-fieldbox-{{ field.field_name }}" {% if field.field_name|is_in:context.required %}class="required"{% endif %}>
+                            <label for="id_{{ field.field_name }}">
+                                {{ field.label_text }}{% if field.field_name|is_in:context.required %}<span class="ak-required-flag">*</span>{% endif %}
+                            </label>
+                            {{ field.input_html }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+            
+            {% if not user.custom_fields.sms_opt_in == "Y" %}
+                {% for field in user_fields %}
+                    {% if field.field_name == "user_sms_opt_in" %}
+                        <div id="ak-fieldbox-{{ field.field_name }}" class="ak-checkbox-field {% if field.field_name|is_in:context.required %}required{% endif %}">
+                            {{ field.input_html }}
+                            <label for="id_{{ field.field_name }}">
+                                {{ field.label_text }}{% if field.field_name|is_in:context.required %}<span class="ak-required-flag">*</span>{% endif %}
+                            </label>
+                            <div class="disclaimer">
+                                <p>By providing my phone number, I agree to receive recurring text messages from Demand Progress. Message & data rates may apply. Text STOP to quit receiving messages.</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </div>
+    {% else %}
+        Not <span id="known_user_name"></span>?  <a href="?" onclick="return actionkit.forms.logOut()">Click here.</a>
+    {% endif %}
 </div>
+
 <div id="unknown_user" class="ak-user-form">
-    {% include "./conditional_user_form.html" %}
+    {% include "./user_form.html" %}
 </div>
+
+<style>
+.ak-recognized-user-extra-fields {
+    background-color: #f9f9f9;
+    border: 1px solid #e1e1e1;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+
+.ak-recognized-user-extra-fields p {
+    margin-top: 0;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.ak-checkbox-field {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #e1e1e1;
+    border-radius: 4px;
+}
+
+.ak-checkbox-field label {
+    display: inline;
+    margin-left: 8px;
+    font-weight: bold;
+}
+
+.disclaimer {
+    margin-left: 24px;
+    margin-top: 5px;
+    font-size: 0.8em;
+    color: #666;
+    font-style: italic;
+}
+</style>

@@ -2,17 +2,18 @@
 
 This feature allows you to display petition form fields conditionally based on user data:
 
-1. Users with phone number and SMS opt-in: Show minimal fields (email & zip)
-2. Users with phone number but no SMS opt-in: Show email, zip, and opt-in checkbox
-3. Users with no phone number: Show email, zip, phone field, and opt-in checkbox
+1. Users with phone number and SMS opt-in: Show only standard ActionKit "Not X? Click here" message
+2. Users with phone number but no SMS opt-in: Show opt-in checkbox
+3. Users with no phone number: Show phone field and opt-in checkbox
+4. Unknown users: Show standard form with all fields
 
 ## Implementation Details
 
-The solution directly modifies the main `user_form.html` template to include conditional logic. This means:
+The solution uses a custom user form wrapper (`conditional_user_form_wrapper.html`) that:
 
-1. The conditional form will be used by ALL petition pages in the templateset
-2. No additional configuration is needed on individual pages
-3. The existing ActionKit form flow remains unchanged
+1. For recognized users with missing data, shows only the specific fields they need to complete
+2. For recognized users with all data, shows just the standard logout message
+3. For unknown users, includes the regular form
 
 ## How to Test
 
@@ -23,36 +24,26 @@ The solution directly modifies the main `user_form.html` template to include con
 3. Make sure this templateset is selected
 4. Click Preview
 
-You can test different user scenarios:
-- Log out to see the experience for users with no data
-- Log in with different user accounts to test various scenarios
+Testing different scenarios:
+- Log out to see the experience for users with no data (full form)
+- Log in with different user accounts to test various scenarios:
+  - User with phone + opt-in: Just shows "Not X? Click here" 
+  - User with phone but no opt-in: Shows opt-in checkbox
+  - User with no phone: Shows phone field and opt-in checkbox
 
 ## Technical Implementation
 
-The solution uses three methods to handle conditional fields:
+The solution uses these technical approaches:
 
-1. **Server-side templating** determines initial field visibility based on user data
-2. **Hidden fields** track user data like SMS opt-in status
-3. **Client-side JavaScript** handles dynamic updates when users are recognized or log out
-
-### SMS Opt-In Field
-
-The SMS opt-in checkbox is a custom field that:
-- Appears when users don't already have opt-in status
-- Includes a styled disclaimer
-- Saves to the custom user field `sms_opt_in` when checked
-
-## Deployment Instructions
-
-1. Upload this templateset or make the changes to the existing templateset
-2. Test the changes using preview mode
-3. Apply the templateset to your petition pages
+1. **Server-side templating** determines which fields to show based on user data
+2. **ActionKit field rendering** uses the CMS-configured field labels and properties
+3. **Styled display** shows the extra fields nicely to recognized users
 
 ## Configuration Options
 
 You may want to customize:
+- The message shown to recognized users missing data
+- The styling of the extra fields container
 - The opt-in checkbox text and disclaimer
-- The styling of the opt-in checkbox
-- Which fields are conditionally shown/hidden
 
-Make these changes in the `user_form.html` file.
+Make these changes in the `conditional_user_form_wrapper.html` file.

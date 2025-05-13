@@ -46,18 +46,6 @@
     </div>
 {% endfor %}
 
-{# SMS opt-in checkbox - only show if user doesn't already have opt-in #}
-{% if not user.custom_fields.sms_opt_in == "Y" %}
-<div id="ak-fieldbox-sms_opt_in" class="ak-checkbox-field">
-    <input type="checkbox" name="user_sms_opt_in" id="id_sms_opt_in" value="Y">
-    <label for="id_sms_opt_in">
-        Yes, I would like to receive text messages about important campaigns
-    </label>
-    <div class="disclaimer">
-        <p>By providing my phone number, I agree to receive recurring text messages from Demand Progress. Message & data rates may apply. Text STOP to quit receiving messages.</p>
-    </div>
-</div>
-{% endif %}
 
 {% if 'country'|is_in:fields %}
     <input type="hidden" name="auto_country" value="1">
@@ -110,19 +98,19 @@ actionkit.forms.contextJSON.logged_in_recognition = function(recognized_user) {
     console.log("Recognized user:", recognized_user);
     if (recognized_user && recognized_user.phone) {
         // Hide phone field if user has a phone
-        $('#ak-fieldbox-phone').hide();
+        $('#ak-fieldbox-mobile_phone').hide();
         
         // If they're already opted in, hide the opt-in checkbox
         if (recognized_user.custom_fields && 
             recognized_user.custom_fields.sms_opt_in === "Y") {
-            $('#ak-fieldbox-sms_opt_in').hide();
+            $('#ak-fieldbox-user_sms_opt_in').hide();
         } else {
-            $('#ak-fieldbox-sms_opt_in').show();
+            $('#ak-fieldbox-user_sms_opt_in').show();
         }
     } else {
         // Show phone field if user doesn't have a phone
-        $('#ak-fieldbox-phone').show();
-        $('#ak-fieldbox-sms_opt_in').show();
+        $('#ak-fieldbox-mobile_phone').show();
+        $('#ak-fieldbox-user_sms_opt_in').show();
     }
 };
 </script>
