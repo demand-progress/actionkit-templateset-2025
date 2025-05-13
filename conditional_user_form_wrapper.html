@@ -40,6 +40,7 @@ For unrecognized users, it works the same as the standard user_form_wrapper.
                 {% endfor %}
             {% endif %}
         </div>
+        
     {% else %}
         Not <span id="known_user_name"></span>?  <a href="?" onclick="return actionkit.forms.logOut()">Click here.</a>
     {% endif %}
