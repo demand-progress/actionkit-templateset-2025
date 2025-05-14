@@ -19,31 +19,71 @@
 
 {% field_order name email prefix first_name middle_name last_name suffix country address1 address2 city state zip region postal phone %}
 
-{% if user.mobile_phone and user.sms_opt_in == "Y" %}
-  {# User has phone and is opted in - minimal fields #}
-  {% hide_by_default prefix first_name middle_name last_name suffix country phone mobile_phone address1 address2 city state region postal %}
-{% elif user.mobile_phone %}
-  {# User has phone but not opted in - include opt-in checkbox but no phone field #}
-  {% hide_by_default prefix first_name middle_name last_name suffix country mobile_phone address1 address2 city state region postal %}
-{% else %}
-  {# User has no phone - show phone field and opt-in checkbox #}
+
   {% hide_by_default prefix first_name middle_name last_name suffix country address1 address2 city state region postal %}
-{% endif %}
 
 {% for field in user_fields %}
-    <div id="ak-fieldbox-{{ field.field_name }}" {% if field.field_name|is_in:context.required %}class="required"{% endif %}>
-        <label for="id_{{ field.field_name }}">
-            {{ field.label_text }}{% if field.field_name|is_in:context.required %}<span class="ak-required-flag">*</span>{% endif %}
-        </label>
-        {% switch field.field_name %}
-            {% case 'country' %}
+    {% switch field.field_name %}
+
+        {% case 'zip' %}
+        {% case 'user_sms_opt_in' %}
+            {% if not user.custom_fields.sms_opt_in == "Y" %}
+                <div id="ak-fieldbox-{{ field.field_name }}" {% if field.field_name|is_in:context.required %}class="required"{% endif %}>
+                    <label for="id_{{ field.field_name }}">
+                        {{ field.label_text }}{% if field.field_name|is_in:context.required %}<span class="ak-required-flag">*</span>{% endif %}
+                    </label>
+                    {{ field.input_html }}
+                </div>
+            {% endif %}
+        {% case 'postal' %}
+            {% if not user.postal %}
+                <div id="ak-fieldbox-{{ field.field_name }}" {% if field.field_name|is_in:context.required %}class="required"{% endif %}>
+                    <label for="id_{{ field.field_name }}">
+                        {{ field.label_text }}{% if field.field_name|is_in:context.required %}<span class="ak-required-flag">*</span>{% endif %}
+                    </label>
+                    {{ field.input_html }}
+                </div>
+            {% endif %}
+        {% case 'email' %}
+            {% if not user.email %}
+                <div id="ak-fieldbox-{{ field.field_name }}" {% if field.field_name|is_in:context.required %}class="required"{% endif %}>
+                    <label for="id_{{ field.field_name }}">
+                        {{ field.label_text }}{% if field.field_name|is_in:context.required %}<span class="ak-required-flag">*</span>{% endif %}
+                    </label>
+                    {{ field.input_html }}
+                </div>
+            {% endif %}
+        {% case 'mobile_phone' %}
+            {% if not user.phones.mobile %}
+                <div id="ak-fieldbox-{{ field.field_name }}" {% if field.field_name|is_in:context.required %}class="required"{% endif %}>
+                    <label for="id_{{ field.field_name }}">
+                        {{ field.label_text }}{% if field.field_name|is_in:context.required %}<span class="ak-required-flag">*</span>{% endif %}
+                    </label>
+                    {{ field.input_html }}
+                </div>
+            {% endif %}
+        {% case 'country' %}
+            <div id="ak-fieldbox-{{ field.field_name }}" {% if field.field_name|is_in:context.required %}class="required"{% endif %}>
+                <label for="id_{{ field.field_name }}">
+                    {{ field.label_text }}{% if field.field_name|is_in:context.required %}<span class="ak-required-flag">*</span>{% endif %}
+                </label>
                 {% include "./country_select.html" %}
-            {% case 'state' %} 
+            </div>
+        {% case 'state' %} 
+            <div id="ak-fieldbox-{{ field.field_name }}" {% if field.field_name|is_in:context.required %}class="required"{% endif %}>
+                <label for="id_{{ field.field_name }}">
+                    {{ field.label_text }}{% if field.field_name|is_in:context.required %}<span class="ak-required-flag">*</span>{% endif %}
+                </label>
                 {% include "./state_select.html" %}
-            {% else %}
+            </div>
+        {% else %}
+            <div id="ak-fieldbox-{{ field.field_name }}" {% if field.field_name|is_in:context.required %}class="required"{% endif %}>
+                <label for="id_{{ field.field_name }}">
+                    {{ field.label_text }}{% if field.field_name|is_in:context.required %}<span class="ak-required-flag">*</span>{% endif %}
+                </label>
                 {{ field.input_html }}
-        {% endswitch %}
-    </div>
+            </div>
+    {% endswitch %}
 {% endfor %}
 
 
@@ -65,52 +105,3 @@
 {% endif %}
 
 {% endfilter %}
-
-<style>
-.ak-checkbox-field {
-    margin-top: 15px;
-    padding: 10px;
-    background-color: #f9f9f9;
-    border: 1px solid #e1e1e1;
-    border-radius: 4px;
-}
-
-.ak-checkbox-field label {
-    display: inline;
-    margin-left: 8px;
-    font-weight: bold;
-}
-
-.disclaimer {
-    margin-left: 24px;
-    margin-top: 5px;
-    font-size: 0.8em;
-    color: #666;
-    font-style: italic;
-}
-</style>
-
-
-<script type="text/javascript">
-// This script helps ensure the right fields are shown/hidden
-// when a user is recognized or logs out
-actionkit.forms.contextJSON = actionkit.forms.contextJSON || {};
-actionkit.forms.contextJSON.logged_in_recognition = function(recognized_user) {
-    console.log("Recognized user:", recognized_user);
-    if (recognized_user && recognized_user.mobile_phone) {
-        // Hide phone field if user has a phone
-        $('#ak-fieldbox-mobile_phone').hide();
-        
-        // If they're already opted in, hide the opt-in checkbox
-        if (recognized_user.sms_opt_in === "Y") {
-            $('#ak-fieldbox-user_sms_opt_in').hide();
-        } else {
-            $('#ak-fieldbox-user_sms_opt_in').show();
-        }
-    } else {
-        // Show phone field if user doesn't have a phone
-        $('#ak-fieldbox-mobile_phone').show();
-        $('#ak-fieldbox-user_sms_opt_in').show();
-    }
-};
-</script>

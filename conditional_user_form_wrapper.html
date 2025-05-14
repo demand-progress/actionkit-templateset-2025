@@ -7,36 +7,9 @@ For unrecognized users, it works the same as the standard user_form_wrapper.
 {% endcomment %}
 {% log_context %}
 <div id="known_user">
-    {% if not user.mobile_phone or not user.sms_opt_in == "Y" %}
-        <div class="ak-recognized-user-extra-fields">
-            <p>Hey <span id="known_user_name"></span>, we need a little more information:</p>
-            
-   
-                {% for field in user_fields %}
-                    {% if field.field_name == "mobile_phone" %}
-                        <div id="ak-fieldbox-mobile_phone" {% if "mobile_phone"|is_in:context.required %}class="required"{% endif %}>
-                            <label for="id_mobile_phone">
-                                {{ field.label_text }}{% if "mobile_phone"|is_in:context.required %}<span class="ak-required-flag">*</span>{% endif %}
-                            </label>
-                            {{ field.html_input }}
-                        </div>
-                    {% endif %}
-                {% endfor %}
-     
-            
-            {% if not user.sms_opt_in == "Y" %}
-                {% for field in user_fields %}
-                    {% if field.field_name == "user_sms_opt_in" %}
-                        <div id="ak-fieldbox-user_sms_opt_in" class="ak-checkbox-field {% if "user_sms_opt_in"|is_in:context.required %}required{% endif %}">
-                            <label for="id_user_sms_opt_in">
-                                {{ field.label_text }}{% if "user_sms_opt_in"|is_in:context.required %}<span class="ak-required-flag">*</span>{% endif %}
-                            </label>
-                            {{ field.html_input }}
-                        </div>
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
-        </div>
+    {% if not user.phones.mobile or not user.custom_fields.sms_opt_in == "Y" %}
+
+      {% include "./user_form.html" %}
         
     {% else %}
         Not <span id="known_user_name"></span>?  <a href="?" onclick="return actionkit.forms.logOut()">Click here.</a>
@@ -46,73 +19,3 @@ For unrecognized users, it works the same as the standard user_form_wrapper.
 <div id="unknown_user" class="ak-user-form">
     {% include "./user_form.html" %}
 </div>
-
-<style>
-.ak-recognized-user-extra-fields {
-    background-color: #f9f9f9;
-    border: 1px solid #e1e1e1;
-    padding: 15px;
-    margin-bottom: 15px;
-    border-radius: 4px;
-}
-
-.ak-recognized-user-extra-fields p {
-    margin-top: 0;
-    font-weight: bold;
-    margin-bottom: 15px;
-}
-
-.ak-checkbox-field {
-    margin-top: 15px;
-    padding: 10px;
-    background-color: #f9f9f9;
-    border: 1px solid #e1e1e1;
-    border-radius: 4px;
-}
-
-.ak-checkbox-field label {
-    display: inline;
-    margin-left: 8px;
-    font-weight: bold;
-}
-
-.disclaimer {
-    margin-left: 24px;
-    margin-top: 5px;
-    font-size: 0.8em;
-    color: #666;
-    font-style: italic;
-}
-</style>
-<script type="text/javascript">
-// This script helps ensure the right fields are shown/hidden
-// when a user is recognized or logs out
-(function() {
-    // Store the original function before overriding it
-    var originalOnContextLoaded = actionkit.forms.onContextLoaded;
-    
-    // Now override the function
-    actionkit.forms.onContextLoaded = function(context) {
-        // Log all context data
-        console.log('Full ActionKit Context:', context);
-        
-        // Log specific user fields if they exist
-        if (context.user) {
-            console.log('User data:', context.user);
-            console.log('User email:', context.user.email);
-            console.log('User name:', context.user.first_name, context.user.last_name);
-            console.log('User custom fields:', context.user.custom_fields);
-        }
-        
-        // Log recognized user status
-        if (context.recognized_user) {
-            console.log('Recognized user:', context.recognized_user);
-        }
-        
-        // Call the original function if it exists
-        if (originalOnContextLoaded && typeof originalOnContextLoaded === 'function') {
-            originalOnContextLoaded.call(this, context);
-        }
-    };
-})();
-</script>
