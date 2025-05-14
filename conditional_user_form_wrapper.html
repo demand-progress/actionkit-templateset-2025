@@ -5,39 +5,32 @@
 This wrapper adds conditional logic to show extra fields for recognized users when needed.
 For unrecognized users, it works the same as the standard user_form_wrapper.
 {% endcomment %}
-
+{% log_context %}
 <div id="known_user">
     {% if not user.mobile_phone or not user.sms_opt_in == "Y" %}
         <div class="ak-recognized-user-extra-fields">
             <p>Hey <span id="known_user_name"></span>, we need a little more information:</p>
             
-            {% if not user.mobile_phone %}
-                {% for field in user_fields %}
-                    {% if field.field_name == "mobile_phone" %}
-                        <div id="ak-fieldbox-{{ field.field_name }}" {% if field.field_name|is_in:context.required %}class="required"{% endif %}>
-                            <label for="id_{{ field.field_name }}">
-                                {{ field.label_text }}{% if field.field_name|is_in:context.required %}<span class="ak-required-flag">*</span>{% endif %}
-                            </label>
-                            {{ field.input_html }}
-                        </div>
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
+   
+                {% with mobile_field=user_fields|filter:"field_name=mobile_phone"|first %}
+                <div id="ak-fieldbox-mobile_phone" {% if "mobile_phone"|is_in:context.required %}class="required"{% endif %}>
+                    <label for="id_mobile_phone">
+                        {{ mobile_field.label_text }}{% if "mobile_phone"|is_in:context.required %}<span class="ak-required-flag">*</span>{% endif %}
+                    </label>
+                    {{ mobile_field.html_input }}
+                </div>
+            {% endwith %}
+     
             
             {% if not user.sms_opt_in == "Y" %}
-                {% for field in user_fields %}
-                    {% if field.field_name == "user_sms_opt_in" %}
-                        <div id="ak-fieldbox-{{ field.field_name }}" class="ak-checkbox-field {% if field.field_name|is_in:context.required %}required{% endif %}">
-                            {{ field.input_html }}
-                            <label for="id_{{ field.field_name }}">
-                                {{ field.label_text }}{% if field.field_name|is_in:context.required %}<span class="ak-required-flag">*</span>{% endif %}
-                            </label>
-                            <div class="disclaimer">
-                                <p>By providing my phone number, I agree to receive recurring text messages from Demand Progress. Message & data rates may apply. Text STOP to quit receiving messages.</p>
-                            </div>
-                        </div>
-                    {% endif %}
-                {% endfor %}
+                {% with sms_field=user_fields|filter:"field_name=user_sms_opt_in"|first %}
+                    <div id="ak-fieldbox-user_sms_opt_in" class="ak-checkbox-field {% if "user_sms_opt_in"|is_in:context.required %}required{% endif %}">
+                        <label for="id_user_sms_opt_in">
+                            {{ sms_field.label_text }}{% if "user_sms_opt_in"|is_in:context.required %}<span class="ak-required-flag">*</span>{% endif %}
+                        </label>
+                        {{ sms_field.html_input }}
+                    </div>
+                {% endwith %}
             {% endif %}
         </div>
         
@@ -87,3 +80,33 @@ For unrecognized users, it works the same as the standard user_form_wrapper.
     font-style: italic;
 }
 </style>
+<script type="text/javascript">
+// This script helps ensure the right fields are shown/hidden
+// when a user is recognized or logs out
+actionkit.forms.onContextLoaded = function(context) {
+    // First, call the original onContextLoaded function
+    // You might need to store a reference to it first
+    var originalOnContextLoaded = actionkit.forms.onContextLoaded;
+    
+    // Log all context data
+    console.log('Full ActionKit Context:', context);
+    
+    // Log specific user fields if they exist
+    if (context.user) {
+        console.log('User data:', context.user);
+        console.log('User email:', context.user.email);
+        console.log('User name:', context.user.first_name, context.user.last_name);
+        console.log('User custom fields:', context.user.custom_fields);
+    }
+    
+    // Log recognized user status
+    if (context.recognized_user) {
+        console.log('Recognized user:', context.recognized_user);
+    }
+    
+    // Continue with original functionality
+    if (originalOnContextLoaded && typeof originalOnContextLoaded === 'function') {
+        originalOnContextLoaded.call(this, context);
+    }
+};
+</script>
