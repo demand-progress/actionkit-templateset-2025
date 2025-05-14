@@ -12,25 +12,29 @@ For unrecognized users, it works the same as the standard user_form_wrapper.
             <p>Hey <span id="known_user_name"></span>, we need a little more information:</p>
             
    
-                {% with mobile_field=user_fields|filter:"field_name=mobile_phone"|first %}
-                <div id="ak-fieldbox-mobile_phone" {% if "mobile_phone"|is_in:context.required %}class="required"{% endif %}>
-                    <label for="id_mobile_phone">
-                        {{ mobile_field.label_text }}{% if "mobile_phone"|is_in:context.required %}<span class="ak-required-flag">*</span>{% endif %}
-                    </label>
-                    {{ mobile_field.html_input }}
-                </div>
-            {% endwith %}
+                {% for field in user_fields %}
+                    {% if field.field_name == "mobile_phone" %}
+                        <div id="ak-fieldbox-mobile_phone" {% if "mobile_phone"|is_in:context.required %}class="required"{% endif %}>
+                            <label for="id_mobile_phone">
+                                {{ field.label_text }}{% if "mobile_phone"|is_in:context.required %}<span class="ak-required-flag">*</span>{% endif %}
+                            </label>
+                            {{ field.html_input }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
      
             
             {% if not user.sms_opt_in == "Y" %}
-                {% with sms_field=user_fields|filter:"field_name=user_sms_opt_in"|first %}
-                    <div id="ak-fieldbox-user_sms_opt_in" class="ak-checkbox-field {% if "user_sms_opt_in"|is_in:context.required %}required{% endif %}">
-                        <label for="id_user_sms_opt_in">
-                            {{ sms_field.label_text }}{% if "user_sms_opt_in"|is_in:context.required %}<span class="ak-required-flag">*</span>{% endif %}
-                        </label>
-                        {{ sms_field.html_input }}
-                    </div>
-                {% endwith %}
+                {% for field in user_fields %}
+                    {% if field.field_name == "user_sms_opt_in" %}
+                        <div id="ak-fieldbox-user_sms_opt_in" class="ak-checkbox-field {% if "user_sms_opt_in"|is_in:context.required %}required{% endif %}">
+                            <label for="id_user_sms_opt_in">
+                                {{ field.label_text }}{% if "user_sms_opt_in"|is_in:context.required %}<span class="ak-required-flag">*</span>{% endif %}
+                            </label>
+                            {{ field.html_input }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
             {% endif %}
         </div>
         
@@ -83,30 +87,32 @@ For unrecognized users, it works the same as the standard user_form_wrapper.
 <script type="text/javascript">
 // This script helps ensure the right fields are shown/hidden
 // when a user is recognized or logs out
-actionkit.forms.onContextLoaded = function(context) {
-    // First, call the original onContextLoaded function
-    // You might need to store a reference to it first
+(function() {
+    // Store the original function before overriding it
     var originalOnContextLoaded = actionkit.forms.onContextLoaded;
     
-    // Log all context data
-    console.log('Full ActionKit Context:', context);
-    
-    // Log specific user fields if they exist
-    if (context.user) {
-        console.log('User data:', context.user);
-        console.log('User email:', context.user.email);
-        console.log('User name:', context.user.first_name, context.user.last_name);
-        console.log('User custom fields:', context.user.custom_fields);
-    }
-    
-    // Log recognized user status
-    if (context.recognized_user) {
-        console.log('Recognized user:', context.recognized_user);
-    }
-    
-    // Continue with original functionality
-    if (originalOnContextLoaded && typeof originalOnContextLoaded === 'function') {
-        originalOnContextLoaded.call(this, context);
-    }
-};
+    // Now override the function
+    actionkit.forms.onContextLoaded = function(context) {
+        // Log all context data
+        console.log('Full ActionKit Context:', context);
+        
+        // Log specific user fields if they exist
+        if (context.user) {
+            console.log('User data:', context.user);
+            console.log('User email:', context.user.email);
+            console.log('User name:', context.user.first_name, context.user.last_name);
+            console.log('User custom fields:', context.user.custom_fields);
+        }
+        
+        // Log recognized user status
+        if (context.recognized_user) {
+            console.log('Recognized user:', context.recognized_user);
+        }
+        
+        // Call the original function if it exists
+        if (originalOnContextLoaded && typeof originalOnContextLoaded === 'function') {
+            originalOnContextLoaded.call(this, context);
+        }
+    };
+})();
 </script>
