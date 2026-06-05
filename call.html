@@ -8,191 +8,178 @@
 </div>
 
 {% if page.custom_fields.callpower_campaign_id %}
-  <script type="text/javascript">
-  window.CallPowerOptions = {
-      form: "form.ak-form.incomplete",
-      phoneField: "#id_phone",
-      locationField: "#id_zip",
-      scriptDisplay: "overlay",
-      submitDelay: 500,
-      customJS: "$('.overlay').on('hide', function() { actionkit.form.submit(); });",
-      overlayCloseText: 'After your call, click here to log your call',
-  };
-  </script>
-  <script type="text/javascript" src="https://demandprogress.callpower.org/api/campaign/{{page.custom_fields.callpower_campaign_id}}/embed.js"></script>
-  {% endif %}
+<script type="text/javascript">
+var akRedirectUrl = '{{ page.followup.url }}';
+window.CallPowerOptions = {
+    form: "form.ak-form",
+    phoneField: "#id_phone",
+    locationField: "#id_zip",
+    scriptDisplay: "overlay",
+    submitDelay: 500,
+    customJS: function() {
+        var $modal = $('.overlay .modal');
 
-<form class="ak-form ak-styled-fields {%if not action%}incomplete{%endif%}" name="act" method="POST" action="/act/" accept-charset="utf-8">
+        // Remove CallPower's script content (everything except button.close and a.closeText)
+        $modal.contents().filter(function() {
+            return !$(this).is('button.close, a.closeText');
+        }).remove();
 
-{% if page.custom_fields.callpower_campaign_id and page.recognize != "never" and akid and user.phone %}
-    <!-- hidden fields necessary for CallPower to work for recognized users -->
-    <input id="id_name" type="hidden" name="name" value="{{user.name}}">
-    <input id="id_email" type="hidden" name="email" value="{{user.email}}">
-    <input id="id_phone" type="hidden" name="phone" value="{{user.phone}}">
-    <input id="id_address1" type="hidden" name="address1" value="{{user.address1}}">
-    <input id="id_city" type="hidden" name="city" value="{{user.city}}">
-    <input id="id_state" type="hidden" name="state" value="{{user.state}}">
-    <input id="id_zip" type="hidden" name="zipcode" value="{{user.zip}}">
+        // Build replacement content from ActionKit fields
+        var $content = $('<div class="ak-overlay-content"></div>')
+            .append('<h3>Instructions</h3>')
+            .append($('#call-story').html())
+            .append('<h3>Script</h3>')
+            .append($('#ak-script-text').html());
+
+        // Insert before the Completed link
+        $modal.find('a.closeText').before($content);
+
+        // Completed: stop propagation so CallPower's hide/formSubmit never fires,
+        // then AJAX submit to AK and redirect. Page navigation closes the overlay.
+        $modal.find('a.closeText').on('click', function(e) {
+            e.stopPropagation();
+            $.ajax({
+                type: 'POST',
+                url: '/act/',
+                data: $('form.ak-form').serialize(),
+                complete: function() {
+                    window.location.href = akRedirectUrl;
+                }
+            });
+        });
+
+        // X/backdrop close: let CallPower's formSubmit + AK submit run normally
+        $('.overlay').on('hide', function() {
+            actionkit.form.submit();
+        });
+    },
+    overlayCloseText: 'Completed',
+};
+</script>
+<script type="text/javascript" src="https://callpower-dp.fftf.app/api/campaign/{{page.custom_fields.callpower_campaign_id}}/embed.js"></script>
 {% endif %}
 
-  <input type="hidden" name="page" value="{{ page.name }}">
+<form class="ak-form ak-styled-fields {%if not action%}incomplete{%endif%}" name="act" method="POST" action="/act/" accept-charset="utf-8">
+    <input type="hidden" name="page" value="{{ page.name }}">
 
-  <div class="ak-grid-row">
-    <div>
-        <div class="ak-grid-col ak-grid-col-8-of-12">
-
-            <div id="call-story" >
-                {% autoescape off %}
-                       {% include_tmpl form.introduction_text %}
-                {% endautoescape %}
+    <div class="ak-grid-row">
+        <div>
+            <div class="ak-grid-col ak-grid-col-8-of-12">
+                <div id="call-story">
+                    {% autoescape off %}
+                        {% include_tmpl form.introduction_text %}
+                    {% endautoescape %}
+                </div>
             </div>
+            <div class="ak-grid-col ak-grid-col-4-of-12">
 
-        </div>
-        <div class="ak-grid-col ak-grid-col-4-of-12">
+                {% if page.custom_fields.featured_image %}
+                    <img class="ak-featured-img" src="{{page.custom_fields.featured_image}}">
+                {% endif %}
 
-            {% if page.custom_fields.featured_image %}
-                <img class="ak-featured-img" src="{{page.custom_fields.featured_image}}">
-            {% endif %}
+                {% include "./progress_meter.html" %}
 
+                <div id="call-form" class="ak-field-box ak-styled-fields {{templateset.custom_fields.field_labels_class|default:"ak-labels-overlaid"}} {{templateset.custom_fields.field_errors_class|default:"ak-errs-below"}}">
+                    <ul class="compact" id="ak-errors"></ul>
+                    <h3>Make a call</h3>
 
-
-            {% include "./progress_meter.html" %}
-
-            <div id="call-form" class="ak-field-box ak-styled-fields {{templateset.custom_fields.field_labels_class|default:"ak-labels-overlaid"}} {{templateset.custom_fields.field_errors_class|default:"ak-errs-below"}}">
-
-                <div id="ak-need-contact-info"></div>
-                <script type="text/ak-template" for="ak-need-contact-info">
-                        <h3>Make a call</h3>
-                
-                    [% if (incomplete) { %]
-                        <div class="ak-instructions ak-faded-text">
-                            {% filter ak_text:"call_needs_contact_info" %}
-                                Fill out the form below so we can find the number for you to call.
-                            {% endfilter %}
+                    {% if akid and page.recognize != "never" %}
+                        {# Recognized user: submit their data silently, show only phone + zip to edit #}
+                        <div id="known_user">
+                            Not {{ user.name }}? <a href="?" onclick="return actionkit.forms.logOut()">Click here.</a>
                         </div>
-                    [% } %]
-                </script>
+                        <input type="hidden" name="name" value="{{ user.name }}">
+                        <input type="hidden" name="email" value="{{ user.email }}">
+                        <input type="hidden" name="address1" value="{{ user.address1 }}">
+                        <input type="hidden" name="city" value="{{ user.city }}">
+                        <input type="hidden" name="state" value="{{ user.state }}">
+                        <input type="hidden" name="country" value="United States">
+                        <div class="ak-field">
+                            <label for="id_phone">Phone</label>
+                            <input id="id_phone" type="tel" name="phone" value="{{ user.phone|default:'' }}">
+                        </div>
+                        <div class="ak-field">
+                            <label for="id_zip">ZIP Code</label>
+                            <input id="id_zip" type="text" name="zipcode" value="{{ user.zip }}">
+                        </div>
+                    {% else %}
+                        {# Unrecognized user: phone is hidden by default in user_form.html, so build the form explicitly #}
+                        <input type="hidden" name="country" value="United States">
+                        <div class="ak-field">
+                            <label for="id_name">Name</label>
+                            <input id="id_name" type="text" name="name">
+                        </div>
+                        <div class="ak-field">
+                            <label for="id_email">Email</label>
+                            <input id="id_email" type="email" name="email">
+                        </div>
+                        <div class="ak-field">
+                            <label for="id_phone">Phone</label>
+                            <input id="id_phone" type="tel" name="phone">
+                        </div>
+                        <div class="ak-field">
+                            <label for="id_zip">ZIP Code</label>
+                            <input id="id_zip" type="text" name="zipcode">
+                        </div>
+                    {% endif %}
 
-                {% include "./user_form_wrapper.html" %}
+                    <button type="submit" class="ak-submit-button">Call Now</button>
+                </div>
 
             </div>
         </div>
-
-
     </div>
 
-    <div class="ak-steps-area">
-        <div class="ak-grid-col ak-grid-col-4-of-12">
-
-            <div id="what_to_say"></div>
-            <script type="text/ak-template" for="what_to_say">
-
-                [% if (!incomplete) { %]
-                    <h3>
-                        <label class="ak-step-label">
-                            <div class="ak-step-number">1</div>
-                            Review Script
-                        </label>
-                        <span class="ak-arrow-holder"><span class="ak-arrow"></span></span>
-                    </h3>
-
-                <div class="ak-field-box ak-field-box-borderless">{% include_tmpl form.script_text %}</div>
-                [% }
-                %]
-
-                <style>
-                [% if (incomplete) { %]
-                    #what_to_say { display: none; }
-                [% } else { %]
-                    .ak-steps-area { clear: both; }
-                [% } %]
-                </style>
-
-            </script>
-        </div>
-        <div class="ak-grid-col ak-grid-col-4-of-12">
-
-            <div id="who_called"></div>
-            <script type="text/ak-template" for="who_called">
-                [% if (!incomplete) { %]
-                    <h3>
-                        <label class="ak-step-label">
-                            <div class="ak-step-number">2</div>
-                            Make the Call
-                        </label>
-                        <span class="ak-arrow-holder"><span class="ak-arrow"></span></span>
-                    </h3>
-              
-                    <div class="ak-margin-top-1">Who did you call?</div>
-
-                [% } %]
-            </script>
-            <div id="target_checkboxes" class="ak-margin-bottom-1"></div>
-                    
-        </div>
-        <div class="ak-grid-col ak-grid-col-4-of-12">
-
-            <div id="ak-survey_question"></div>
-            {% if form.survey_question_text %}
-            <script type="text/ak-template" for="ak-survey_question">
-                [% if (!incomplete) { %]
-                     <h3 id="ak-report-call">
-                        <label class="ak-step-label">
-                            <div class="ak-step-number">3</div>
-                            Report the Call
-                        </label>
-                        <span class="ak-arrow-holder"><span class="ak-arrow"></span></span>
-                    </h3>
-                    <div class="ak-labels-overlaid ak-margin-top-1">
-                        {% autoescape off %}
-                        <label for="id_action_survey">{% include_tmpl form.survey_question_text %}</label>
-                        {% endautoescape %}
-                        <textarea id="id_action_survey" name="action_survey" class="ak-large-message"></textarea>
-                        </div>
-                [% } %]
-            </script>
-
-            {% endif %}
-             
-        </div>
+    <div id="ak-script-text" style="display:none">
+        {% autoescape off %}{% include_tmpl form.script_text %}{% endautoescape %}
     </div>
-
-    <div class="ak-grid-col ak-grid-col-4-of-12 ak-pull-right">
-        <button type="submit" class="ak-submit-button">Submit</button>
-    </div>
-
-  </div>
 </form>
 
-{% endblock %}
+<style>
+.overlay .modal {
+    font-size: 1.3em;
+}
+.overlay button.close {
+    background: transparent;
+    background-image: none;
+    color: #888;
+    font-size: 1.75em;
+    font-weight: normal;
+    padding: 4px 12px;
+    width: auto;
+    min-width: 0;
+    box-shadow: none;
+    text-shadow: none;
+    border: none;
+    border-radius: 3px;
+    outline: none;
+}
+.overlay button.close:hover {
+    background: #666;
+}
+.overlay a.closeText {
+    display: block;
+    margin: 1em auto 0;
+    text-align: center;
+    background: #9f1719;
+    color: #fff;
+    border-radius: 0;
+    transition: .2s;
+    width: 200px;
+    padding-left: 30px;
+    padding-right: 30px;
+    border: 1px solid #fff;
+    outline: 2px solid #9f1719;
+    font-weight: 600;
+    font-size: 1.3em;
+    text-decoration: none;
+    position: relative;
+    bottom: auto;
+}
+.overlay a.closeText:hover {
+    background: #7a1113;
+    outline-color: #7a1113;
+}
+</style>
 
-{% block script_additions %}
-<script type="text/javascript">
-$(window).load(function() {
-    $('#target_checkboxes').appendTo('div#who_called');
-
-    var $window = $(window);
-    function call_page_steps_mobile() {
-        var windowSize = $window.width();
-        if (windowSize < 480) {
-               $('.ak-steps-area h3').addClass('clickable');
-        } else {
-            $('.ak-steps-area h3').removeClass('clickable');
-            $('.ak-steps-area h3').each( function () {
-              $(this).siblings('div').show();
-            });
-        }
-
-    }
-       $('.ak-steps-area').on('click', 'h3.clickable', function(e) {
-        e.stopPropagation();
-        $(this).toggleClass('active');
-        $(this).siblings('div').stop().slideToggle('fast');
-    });
-
-    $(window).on('resize', call_page_steps_mobile);
-    call_page_steps_mobile();
-
-});
-</script>
 {% endblock %}
